@@ -43,6 +43,18 @@ def format_clusters_response(data):
     return "\n".join(lines)
 
 
+def format_addons_response(data):
+    if not data or "items" not in data:
+        return "No addons found or invalid response."
+
+    lines = []
+    for addon in data["items"]:
+        name = addon.get("name", "N/A")
+        state = addon.get("state", "N/A")
+        lines.append(f"Addon: {name}\n" f"  State: {state}\n")
+    return "\n".join(lines)
+
+
 @mcp.tool()
 async def get_clusters(state: str) -> str:
     url = f"{OCM_API_BASE}/api/clusters_mgmt/v1/clusters"
@@ -60,6 +72,16 @@ async def get_cluster(cluster_id: str) -> str:
     print(data)
     if data and data.get("id"):
         return format_clusters_response({"items": [data]})
+
+
+@mcp.tool()
+async def get_cluster_addons(cluster_id: str) -> str:
+    url = f"{OCM_API_BASE}/api/clusters_mgmt/v1/clusters/{cluster_id}/addons"
+    data = await make_request(url)
+    print(data)
+    if data:
+        return format_addons_response(data)
+    return "Failed to fetch addons data."
 
 
 if __name__ == "__main__":
