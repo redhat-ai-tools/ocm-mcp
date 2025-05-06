@@ -53,5 +53,14 @@ async def get_clusters(state: str) -> str:
     return formatted
 
 
+@mcp.tool()
+async def get_cluster(cluster_id: str) -> str:
+    url = f"{OCM_API_BASE}/api/clusters_mgmt/v1/clusters/{cluster_id}"
+    data = await make_request(url)
+    print(data)
+    if data and data.get("id"):
+        return format_clusters_response({"items": [data]})
+
+
 if __name__ == "__main__":
     mcp.run(transport="stdio")
