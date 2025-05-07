@@ -9,13 +9,23 @@ OCM_API_BASE = "https://api.openshift.com"
 
 
 async def make_request(url: str) -> dict[str, Any] | None:
-    token = os.environ["OCM_TOKEN"]
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/json",
+    client_id = os.environ["OCM_CLIENT_ID"]
+    offline_token = os.environ["OCM_OFFLINE_TOKEN"]
+    access_token_url = os.environ["ACCESS_TOKEN_URL"]
+    data = {
+        "grant_type": "refresh_token",
+        "client_id": client_id,
+        "refresh_token": offline_token,
     }
     async with httpx.AsyncClient() as client:
         try:
+            response = await client.post(access_token_url, data=data, timeout=30.0)
+            response.raise_for_status()
+            token = response.json().get("access_token")
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/json",
+            }
             response = await client.get(url, headers=headers, timeout=30.0)
             response.raise_for_status()
             return response.json()
