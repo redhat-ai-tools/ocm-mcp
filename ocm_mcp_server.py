@@ -9,13 +9,23 @@ OCM_API_BASE = "https://api.openshift.com"
 
 
 async def make_request(url: str) -> dict[str, Any] | None:
-    token = os.environ["OCM_TOKEN"]
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/json",
+    client_id = os.environ["OCM_CLIENT_ID"]
+    offline_token = os.environ["OCM_OFFLINE_TOKEN"]
+    access_token_url = os.environ["ACCESS_TOKEN_URL"]
+    data = {
+        "grant_type": "refresh_token",
+        "client_id": client_id,
+        "refresh_token": offline_token,
     }
     async with httpx.AsyncClient() as client:
         try:
+            response = await client.post(access_token_url, data=data, timeout=30.0)
+            response.raise_for_status()
+            token = response.json().get("access_token")
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/json",
+            }
             response = await client.get(url, headers=headers, timeout=30.0)
             response.raise_for_status()
             return response.json()
@@ -42,6 +52,22 @@ def format_clusters_response(data):
         )
     return "\n".join(lines)
 
+def format_clusters_response_logs(data):
+    if not data or "items" not in data:
+        return "No clusters found or invalid response."
+
+    lines = []
+    for cluster in data["items"]:
+        service_name = cluster.get("service_name", "N/A")
+        cid = cluster.get("id", "N/A")
+        description = cluster.get("description", "")
+
+        lines.append(
+            f"  Cluster: {service_name}\n"
+            f"  ID: {cid}\n"
+            f"  DESCRIPTION: {description}\n"
+        )
+    return "\n".join(lines)
 
 def format_addons_response(data):
     if not data or "items" not in data:
@@ -66,13 +92,12 @@ async def get_clusters(state: str) -> str:
 
 
 @mcp.tool()
-async def get_cluster(cluster_id: str) -> str:
-    url = f"{OCM_API_BASE}/api/clusters_mgmt/v1/clusters/{cluster_id}"
+async def get_clusters_logs(cluster_id: str) -> str:
+    url = f"{OCM_API_BASE}/api/service_logs/v1/clusters/cluster_logs?cluster_id={cluster_id}"
     data = await make_request(url)
-    print(data)
-    if data and data.get("id"):
-        return format_clusters_response({"items": [data]})
-
+    if data:
+        return format_clusters_response_logs(data)
+    return "No logs found or invalid response."
 
 @mcp.tool()
 async def get_cluster_addons(cluster_id: str) -> str:
