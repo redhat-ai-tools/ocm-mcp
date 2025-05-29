@@ -52,6 +52,22 @@ def format_clusters_response(data):
         )
     return "\n".join(lines)
 
+def format_clusters_response_logs(data):
+    if not data or "items" not in data:
+        return "No clusters found or invalid response."
+
+    lines = []
+    for cluster in data["items"]:
+        service_name = cluster.get("service_name", "N/A")
+        cid = cluster.get("id", "N/A")
+        description = cluster.get("description", "")
+
+        lines.append(
+            f"  Cluster: {service_name}\n"
+            f"  ID: {cid}\n"
+            f"  DESCRIPTION: {description}\n"
+        )
+    return "\n".join(lines)
 
 def format_addons_response(data):
     if not data or "items" not in data:
@@ -82,6 +98,15 @@ async def get_cluster(cluster_id: str) -> str:
     print(data)
     if data and data.get("id"):
         return format_clusters_response({"items": [data]})
+
+
+@mcp.tool()
+async def get_clusters_logs(cluster_id: str) -> str:
+    url = f"{OCM_API_BASE}/api/service_logs/v1/clusters/cluster_logs?cluster_id={cluster_id}"
+    data = await make_request(url)
+    if data:
+        return format_clusters_response_logs(data)
+    return "No logs found or invalid response."
 
 
 @mcp.tool()
