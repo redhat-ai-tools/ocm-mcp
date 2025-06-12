@@ -124,4 +124,4 @@ async def get_cluster_addons(cluster_id: str) -> str:
 
 
 if __name__ == "__main__":
-    mcp.run(transport="stdio")
+    mcp.run(transport=os.environ.get("MCP_TRANSPORT", "stdio"))
