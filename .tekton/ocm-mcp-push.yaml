@@ -23,7 +23,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-ai-tools/rhoai-tenant/ocm-mcp:{{revision}}
+    value: quay.io/redhat-ai-tools/ocm-mcp:{{revision}}
   - name: dockerfile
     value: Containerfile
   - name: path-context
