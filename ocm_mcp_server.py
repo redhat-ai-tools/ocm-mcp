@@ -39,6 +39,15 @@ async def make_request(url: str) -> dict[str, Any] | None:
             return None
 
 
+@mcp.tool()
+async def whoami() -> str:
+    url = f"{OCM_API_BASE}/api/accounts_mgmt/v1/current_account"
+    data = await make_request(url)
+    if data:
+        return data.get("username")
+    return "Failed to fetch whoami data."
+
+
 def format_clusters_response(data):
     if not data or "items" not in data:
         return "No clusters found or invalid response."
