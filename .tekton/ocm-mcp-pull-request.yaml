@@ -32,14 +32,14 @@ spec:
   - name: path-context
     value: .
   pipelineRef:
-    resolver: git
+    resolver: bundles
     params:
-    - name: url
-      value: https://github.com/konflux-ci/build-definitions.git
-    - name: revision
-      value: main
-    - name: pathInRepo
-      value: pipelines/docker-build-oci-ta/docker-build-oci-ta.yaml
+    - name: name
+      value: docker-build-oci-ta
+    - name: bundle
+      value: quay.io/konflux-ci/tekton-catalog/pipeline-docker-build-oci-ta:devel
+    - name: kind
+      value: pipeline
   taskRunTemplate:
     serviceAccountName: build-pipeline-ocm-mcp
   workspaces:
