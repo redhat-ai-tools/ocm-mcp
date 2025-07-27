@@ -58,11 +58,15 @@ def format_clusters_response(data):
         cid = cluster.get("id", "N/A")
         api_url = cluster.get("api", {}).get("url", "N/A")
         console_url = cluster.get("console", {}).get("url", "N/A")
+        state = cluster.get("state", "N/A")
+        version = cluster.get("openshift_version", "N/A")
         lines.append(
             f"Cluster: {name}\n"
             f"  ID: {cid}\n"
             f"  API URL: {api_url}\n"
             f"  Console URL: {console_url}\n"
+            f"  State: {state}\n"
+            f"  Version: {version}\n"
         )
     return "\n".join(lines)
 
@@ -94,6 +98,19 @@ def format_addons_response(data):
         name = addon.get("name", "N/A")
         state = addon.get("state", "N/A")
         lines.append(f"Addon: {name}\n" f"  State: {state}\n")
+    return "\n".join(lines)
+
+
+def format_machine_pools_response(data):
+    if not data or "items" not in data:
+        return "No machine pools found or invalid response."
+
+    lines = []
+    for machine_pool in data["items"]:
+        id = machine_pool.get("id", "N/A")
+        replicas = machine_pool.get("replicas", "N/A")
+        instance_type = machine_pool.get("instance_type", "N/A")
+        lines.append(f"Machine Pool: {id}\n  Replicas: {replicas}\n  Instance Type: {instance_type}\n")
     return "\n".join(lines)
 
 
@@ -130,6 +147,15 @@ async def get_cluster_addons(cluster_id: str) -> str:
     if data:
         return format_addons_response(data)
     return "Failed to fetch addons data."
+
+
+@mcp.tool()
+async def get_cluster_machine_pools(cluster_id: str) -> str:
+    url = f"{OCM_API_BASE}/api/clusters_mgmt/v1/clusters/{cluster_id}/machine_pools"
+    data = await make_request(url)
+    if data:
+        return format_machine_pools_response(data)
+    return "Failed to fetch machine pools data."
 
 
 if __name__ == "__main__":
