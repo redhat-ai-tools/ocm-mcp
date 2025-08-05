@@ -9,34 +9,42 @@ OCM_API_BASE = os.environ.get("OCM_API_BASE", "https://api.openshift.com")
 MCP_TRANSPORT = os.environ.get("MCP_TRANSPORT", "stdio")
 
 
-async def make_request(url: str) -> dict[str, Any] | None:
-    client_id = os.environ["OCM_CLIENT_ID"]
+async def get_access_token(client: httpx.AsyncClient) -> str:
+    client_id = os.environ.get("OCM_CLIENT_ID", "cloud-services")
     offline_token = (
         os.environ["OCM_OFFLINE_TOKEN"]
         if MCP_TRANSPORT == "stdio"
         else mcp.get_context().request_context.request.headers["X-OCM-Offline-Token"]
     )
-    access_token_url = os.environ["ACCESS_TOKEN_URL"]
+    access_token_url = os.environ.get(
+        "ACCESS_TOKEN_URL",
+        "https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token",
+    )
     data = {
         "grant_type": "refresh_token",
         "client_id": client_id,
         "refresh_token": offline_token,
     }
+    response = await client.post(access_token_url, data=data, timeout=30.0)
+    response.raise_for_status()
+    return response.json()["access_token"]
+
+
+async def make_request(
+    url: str, method: str = "GET", data: dict[str, Any] = None
+) -> dict[str, Any] | None:
     async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(access_token_url, data=data, timeout=30.0)
-            response.raise_for_status()
-            token = response.json().get("access_token")
-            headers = {
-                "Authorization": f"Bearer {token}",
-                "Accept": "application/json",
-            }
-            response = await client.get(url, headers=headers, timeout=30.0)
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            print(e)
-            return None
+        token = await get_access_token(client)
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/json",
+        }
+        if method.upper() == "GET":
+            response = await client.request(method, url, headers=headers, params=data)
+        else:
+            response = await client.request(method, url, headers=headers, json=data)
+        response.raise_for_status()
+        return response.json()
 
 
 @mcp.tool()
