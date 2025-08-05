@@ -116,6 +116,7 @@ def format_machine_pools_response(data):
 
 @mcp.tool()
 async def get_clusters(state: str) -> str:
+    """Retrieves the list of clusters."""
     url = f"{OCM_API_BASE}/api/clusters_mgmt/v1/clusters"
     data = await make_request(url)
 
@@ -125,6 +126,7 @@ async def get_clusters(state: str) -> str:
 
 @mcp.tool()
 async def get_cluster(cluster_id: str) -> str:
+    """Retrieves the details of the cluster."""
     url = f"{OCM_API_BASE}/api/clusters_mgmt/v1/clusters/{cluster_id}"
     data = await make_request(url)
     if data and data.get("id"):
@@ -133,6 +135,7 @@ async def get_cluster(cluster_id: str) -> str:
 
 @mcp.tool()
 async def get_clusters_logs(cluster_id: str) -> str:
+    """Get all service logs for a cluster specified by cluster_id"""
     url = f"{OCM_API_BASE}/api/service_logs/v1/clusters/cluster_logs?cluster_id={cluster_id}"
     data = await make_request(url)
     if data:
@@ -142,6 +145,7 @@ async def get_clusters_logs(cluster_id: str) -> str:
 
 @mcp.tool()
 async def get_cluster_addons(cluster_id: str) -> str:
+    """Retrieves the list of add-on installations."""
     url = f"{OCM_API_BASE}/api/clusters_mgmt/v1/clusters/{cluster_id}/addons"
     data = await make_request(url)
     if data:
@@ -151,6 +155,7 @@ async def get_cluster_addons(cluster_id: str) -> str:
 
 @mcp.tool()
 async def get_cluster_machine_pools(cluster_id: str) -> str:
+    """Retrieves the list of machine pools."""
     url = f"{OCM_API_BASE}/api/clusters_mgmt/v1/clusters/{cluster_id}/machine_pools"
     data = await make_request(url)
     if data:
