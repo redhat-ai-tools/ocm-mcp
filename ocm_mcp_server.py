@@ -135,6 +135,7 @@ async def get_cluster(cluster_id: str) -> str:
 
 @mcp.tool()
 async def get_clusters_logs(cluster_id: str) -> str:
+    """Get all service logs for a cluster specified by cluster_id"""
     url = f"{OCM_API_BASE}/api/service_logs/v1/clusters/cluster_logs?cluster_id={cluster_id}"
     data = await make_request(url)
     if data:
