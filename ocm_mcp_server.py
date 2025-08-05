@@ -143,6 +143,34 @@ async def get_cluster(cluster_id: str) -> str:
 
 
 @mcp.tool()
+async def create_cluster(
+    cluster_name: str,
+    region: str = "us-east-1",
+    multi_az: bool = False,
+    nodes: int = 4,
+    instance_type: str = "m5.xlarge",
+) -> str:
+    """Provision a new cluster and add it to the collection of clusters. Only supports Classic OSD on AWS."""
+    url = f"{OCM_API_BASE}/api/clusters_mgmt/v1/clusters"
+    data = {
+        "byoc": False,
+        "name": cluster_name,
+        "region": {"id": region},
+        "nodes": {
+            "compute": nodes,
+            "compute_machine_type": {"id": instance_type},
+        },
+        "managed": True,
+        "cloud_provider": {"id": "aws"},
+        "multi_az": multi_az,
+        "load_balancer_quota": 0,
+        "storage_quota": {"unit": "B", "value": 107374182400},
+    }
+    response = await make_request(url, method="POST", data=data)
+    return response
+
+
+@mcp.tool()
 async def get_clusters_logs(cluster_id: str) -> str:
     """Get all service logs for a cluster specified by cluster_id"""
     url = f"{OCM_API_BASE}/api/service_logs/v1/clusters/cluster_logs?cluster_id={cluster_id}"
