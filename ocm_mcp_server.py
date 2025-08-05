@@ -41,6 +41,7 @@ async def make_request(url: str) -> dict[str, Any] | None:
 
 @mcp.tool()
 async def whoami() -> str:
+    """Get the authenticated account."""
     url = f"{OCM_API_BASE}/api/accounts_mgmt/v1/current_account"
     data = await make_request(url)
     if data:
