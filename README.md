@@ -43,7 +43,7 @@ Example configuration to connect to a non-stdio MCP server:
 ```json
 {
   "mcpServers": {
-    "slack": {
+    "ocm-mcp": {
       "url": "https://ocm-mcp.example.com/sse",
       "headers": {
         "X-OCM-Offline-Token": "REDACTED"
