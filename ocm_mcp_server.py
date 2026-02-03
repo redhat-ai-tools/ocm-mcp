@@ -145,12 +145,13 @@ async def get_cluster(cluster_id: str) -> str:
 @mcp.tool()
 async def create_cluster(
     cluster_name: str,
+    cloud_provider: str = "aws",
     region: str = "us-east-1",
     multi_az: bool = False,
     nodes: int = 4,
     instance_type: str = "m5.xlarge",
 ) -> str:
-    """Provision a new cluster and add it to the collection of clusters. Only supports Classic OSD on AWS."""
+    """Provision a new cluster and add it to the collection of clusters. Only supports Classic OSD on AWS/GCP."""
     url = f"{OCM_API_BASE}/api/clusters_mgmt/v1/clusters"
     data = {
         "byoc": False,
@@ -161,7 +162,7 @@ async def create_cluster(
             "compute_machine_type": {"id": instance_type},
         },
         "managed": True,
-        "cloud_provider": {"id": "aws"},
+        "cloud_provider": {"id": cloud_provider},
         "multi_az": multi_az,
         "load_balancer_quota": 0,
         "storage_quota": {"unit": "B", "value": 107374182400},
